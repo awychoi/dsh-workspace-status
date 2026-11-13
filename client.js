@@ -282,7 +282,7 @@ window.__ModuleLoader__.load({
      * painter only while the preference is on.
      * @param props - slot props.
      */
-    function WorkspaceColorsOverlay(props) {
+    function WorkspaceStatusOverlay(props) {
       const settings = useSettings()
       const canPaint = props.useWorkspaces !== undefined
         && props.useSessions !== undefined
@@ -332,7 +332,7 @@ window.__ModuleLoader__.load({
           name: 'shell.overlay',
           id: 'workspace-status.tone',
           order: 41,
-        }, WorkspaceColorsOverlay))
+        }, WorkspaceStatusOverlay))
       },
     }
   },
