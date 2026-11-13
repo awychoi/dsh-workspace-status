@@ -49,9 +49,6 @@ catalog never count as running. Busy pulses are suppressed under
   and success tokens, so light and dark themes both work. The existing glyph is
   recolored in place — the open/closed folder shape and the hover chevron stay
   intact.
-- **Preference:** one switch in **Settings → General → Workspace Status**,
-  stored in `localStorage` under `dsh.workspace-status.settings.v1` and migrated
-  from earlier keys.
 - **Limit:** an approval requested inside a subagent's own conversation shows
   amber (the parent is busy) rather than red; only a workspace session's own
   pending approval/question is red.
@@ -69,11 +66,6 @@ catalog never count as running. Busy pulses are suppressed under
 Remove **Workspace Status** from DSH's plugin list and restart DSH. The folder
 glyph returns to its normal color, and the switch remains in `localStorage`
 only.
-
-## Assets
-
-`icon.svg` is the plugin icon. `icon-white.svg` is the transparent solid-white
-mark for dark backgrounds. Exported as `./icon` and `./icon-white`.
 
 ## License
 
