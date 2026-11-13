@@ -1,6 +1,6 @@
 {
   "meta": {
-    "title": "Workspace status colors",
+    "title": "Workspace Status",
     "description": "Colors each workspace folder in the sidebar by its sessions: red when waiting on you, pulsing amber while working, green for an unread completion."
   }
 }

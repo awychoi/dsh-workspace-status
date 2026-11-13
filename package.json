@@ -1,9 +1,9 @@
 {
-  "name": "dsh-workspace-colors",
-  "version": "1.0.0",
+  "name": "dsh-workspace-status",
+  "version": "2.0.0",
   "private": true,
   "type": "module",
-  "description": "Rolls each workspace's session activity into colors on its sidebar folder glyph for DeepSeek Harness",
+  "description": "Rolls each workspace's session activity into status colors on its sidebar folder glyph for DeepSeek Harness",
   "author": "awychoi",
   "license": "MIT",
   "keywords": [

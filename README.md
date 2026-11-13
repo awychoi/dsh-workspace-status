@@ -1,4 +1,4 @@
-# dsh-workspace-colors
+# dsh-workspace-status
 
 Colors each workspace folder glyph in the DeepSeek Harness sidebar by rolling
 up what its sessions are doing:
@@ -21,7 +21,7 @@ dropdown lists). Busy pulses are suppressed under `prefers-reduced-motion`.
 Use **Plugins → Add plugin** with this directory, or:
 
 ```sh
-dsh plugin add /path/to/dsh-workspace-colors
+dsh plugin add /path/to/dsh-workspace-status
 ```
 
 Requires the shipped `ui-workspace` and `ui-session` client plugins, which the
@@ -29,15 +29,16 @@ standard Web composition mounts.
 
 ## Turn it off
 
-Settings → General → **Workspace status colors** has one switch. It defaults to
-on and is stored in this browser's localStorage
-(`dsh.workspace-colors.settings.v1`). On first load it inherits the previous
-`colors` value written by the combined `dsh-workspace-open` plugin, if any.
+Settings → General → **Workspace Status** has one switch. It defaults to on and
+is stored in this browser's localStorage
+(`dsh.workspace-status.settings.v1`). On first load it inherits the previous
+value from `dsh.workspace-colors.settings.v1` or the combined
+`dsh.workspace-open.settings.v1` key, if any.
 
 ## Implementation note
 
 DSH does not yet expose a slot for decorating a workspace header row, so the
-layer keys off the shipped row attribute `data-row-key="workspace:<id>`. If a
+layer keys off the shipped row attribute `data-row-key="workspace:<id>"`. If a
 future DSH release changes that markup, the layer stops painting and the folder
 simply returns to its normal colors — nothing else breaks. A supported
 `sidebar.workspaces.workspace.leading` seat would let this move to the normal

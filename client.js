@@ -9,23 +9,20 @@
  * no session data of its own. One switch in Settings → General turns it off.
  */
 window.__ModuleLoader__.load({
-  id: 'dsh-workspace-colors',
+  id: 'dsh-workspace-status',
   factory(require) {
     const React = require('react')
     const h = React.createElement
 
-    const NS = 'workspaceColors'
-    const SETTINGS_KEY = 'dsh.workspace-colors.settings.v1'
-    /** The combined settings key written before the plugins were split. */
-    const LEGACY_SETTINGS_KEY = 'dsh.workspace-open.settings.v1'
+    const NS = 'workspaceStatus'
 
     const en = {
-      'settings.title': 'Workspace status colors',
+      'settings.title': 'Workspace Status',
       'settings.description': 'Red while a session waits for you, pulsing amber while work runs, green until a finished session is read.',
       'settings.toggle': 'Show on workspace folders',
     }
     const zh = {
-      'settings.title': '工作区状态颜色',
+      'settings.title': '工作区状态',
       'settings.description': '会话等待操作时显示红色，运行中显示琥珀色脉冲，完成后未读显示绿色。',
       'settings.toggle': '在工作区文件夹上显示',
     }
@@ -118,69 +115,39 @@ window.__ModuleLoader__.load({
     // #endregion
 
     // #region preference
+    const SETTINGS_KEY = 'dsh.workspace-status.settings.v1'
+    /** Keys written before the plugin was renamed or split. */
+    const LEGACY_SETTINGS_KEYS = [
+      'dsh.workspace-colors.settings.v1',
+      'dsh.workspace-open.settings.v1',
+    ]
+
     /** @returns the persisted switch, defaulting to on. */
     function readSettings() {
-      try {
-        const raw = window.localStorage.getItem(SETTINGS_KEY)
-        if (raw !== null) {
+      for (const key of [SETTINGS_KEY, ...LEGACY_SETTINGS_KEYS]) {
+        try {
+          const raw = window.localStorage.getItem(key)
+          if (raw === null) continue
           const parsed = JSON.parse(raw)
-          if (parsed !== null && typeof parsed === 'object') return { colors: parsed.colors !== false }
-        }
-        // Carry over the value from the combined plugin's row, if any.
-        const legacy = window.localStorage.getItem(LEGACY_SETTINGS_KEY)
-        if (legacy !== null) {
-          const parsed = JSON.parse(legacy)
-          if (parsed !== null && typeof parsed === 'object' && parsed.colors === false) {
-            return { colors: false }
+          if (parsed !== null && typeof parsed === 'object' && typeof parsed.colors === 'boolean') {
+            return { colors: parsed.colors }
           }
+        } catch (_error) {
+          // Storage disabled or corrupt: try the next key, then the default.
         }
-      } catch (_error) {
-        // Storage disabled or corrupt: fall through to the default.
       }
       return { colors: true }
     }
 
     let settings = readSettings()
-    // Pin the value (including one migrated from the combined plugin) so the
-    // older plugin's writes cannot overwrite it later.
+    // Pin the value (including one migrated from an older key) so a previous
+    // plugin identity cannot overwrite it later.
     try {
       window.localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings))
     } catch (_error) {
       // An unavailable storage keeps the default for this page only.
     }
     const settingsListeners = new Set()
-
-    /** @returns current switches. */
-    function getSettings() {
-      return settings
-    }
-
-    /**
-     * @param listener - called after every change.
-     * @returns unsubscribe.
-     */
-    function subscribeSettings(listener) {
-      settingsListeners.add(listener)
-      return () => { settingsListeners.delete(listener) }
-    }
-
-    /** @param patch - switches to replace. */
-    function updateSettings(patch) {
-      settings = { ...settings, ...patch }
-      try {
-        window.localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings))
-      } catch (_error) {
-        // An unavailable storage keeps the choice for this page only.
-      }
-      for (const listener of settingsListeners) listener()
-    }
-
-    /** @returns the live switches for a component. */
-    function useSettings() {
-      const [value, setValue] = React.useState(getSettings)
-      React.useEffect(() => subscribeSettings(() => { setValue(getSettings()) }), [])
-      return value
-    }
     // #endregion
 
     /** Theme palette colors shared with the Session status dots. */
@@ -189,7 +156,7 @@ window.__ModuleLoader__.load({
       busy: 'var(--dsw-alias-state-warn-primary)',
       done: 'var(--dsw-alias-state-success-primary)',
     }
-    const PULSE_NAME = 'dsh-workspace-colors-busy-pulse'
+    const PULSE_NAME = 'dsh-workspace-status-busy-pulse'
     /** Workspace header rows carry `workspace:<workspaceId>`; ungrouped is empty. */
     const WORKSPACE_ROW_SELECTOR = '[data-row-key^="workspace:"]'
     const WORKSPACE_ROW_PREFIX = 'workspace:'
@@ -198,17 +165,17 @@ window.__ModuleLoader__.load({
     /** Shared stylesheet: the busy pulse and the settings row. */
     const STYLES = `
 @keyframes ${PULSE_NAME}{0%,100%{opacity:1}50%{opacity:.45}}
-.dsh-workspace-colors-row{display:flex;flex-direction:column;gap:12px;padding:16px 0;border-bottom:.5px solid var(--dsw-alias-border-l2)}
-.dsh-workspace-colors-row-head{display:flex;flex-direction:column;gap:4px}
-.dsh-workspace-colors-row-title{font-size:14px;font-weight:400;line-height:22px;color:var(--dsw-alias-label-primary)}
-.dsh-workspace-colors-row-desc{font-size:12px;font-weight:400;line-height:18px;color:var(--dsw-alias-label-tertiary)}
-.dsh-workspace-colors-option{display:flex;align-items:center;justify-content:space-between;gap:16px;cursor:pointer}
-.dsh-workspace-colors-option-label{font-size:13px;font-weight:400;line-height:20px;color:var(--dsw-alias-label-secondary)}
-.dsh-workspace-colors-switch{appearance:none;-webkit-appearance:none;flex:none;position:relative;width:34px;height:20px;margin:0;border:0;border-radius:999px;background:var(--dsw-alias-interactive-bg-hover);cursor:pointer;transition:background 120ms ease}
-.dsh-workspace-colors-switch::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--dsw-alias-label-primary);transition:transform 120ms ease}
-.dsh-workspace-colors-switch:checked{background:var(--dsw-alias-brand-primary)}
-.dsh-workspace-colors-switch:checked::after{transform:translateX(14px);background:var(--dsw-alias-bg-base)}
-.dsh-workspace-colors-switch:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:2px}
+.dsh-workspace-status-row{display:flex;flex-direction:column;gap:12px;padding:16px 0;border-bottom:.5px solid var(--dsw-alias-border-l2)}
+.dsh-workspace-status-row-head{display:flex;flex-direction:column;gap:4px}
+.dsh-workspace-status-row-title{font-size:14px;font-weight:400;line-height:22px;color:var(--dsw-alias-label-primary)}
+.dsh-workspace-status-row-desc{font-size:12px;font-weight:400;line-height:18px;color:var(--dsw-alias-label-tertiary)}
+.dsh-workspace-status-option{display:flex;align-items:center;justify-content:space-between;gap:16px;cursor:pointer}
+.dsh-workspace-status-option-label{font-size:13px;font-weight:400;line-height:20px;color:var(--dsw-alias-label-secondary)}
+.dsh-workspace-status-switch{appearance:none;-webkit-appearance:none;flex:none;position:relative;width:34px;height:20px;margin:0;border:0;border-radius:999px;background:var(--dsw-alias-interactive-bg-hover);cursor:pointer;transition:background 120ms ease}
+.dsh-workspace-status-switch::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--dsw-alias-label-primary);transition:transform 120ms ease}
+.dsh-workspace-status-switch:checked{background:var(--dsw-alias-brand-primary)}
+.dsh-workspace-status-switch:checked::after{transform:translateX(14px);background:var(--dsw-alias-bg-base)}
+.dsh-workspace-status-switch:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:2px}
 `
 
     let reducedMotionQuery
@@ -321,7 +288,7 @@ window.__ModuleLoader__.load({
         && props.useSessions !== undefined
         && props.useSessionStatus !== undefined
       return h(React.Fragment, null,
-        h('style', { 'data-dsh-workspace-colors': 'styles' }, STYLES),
+        h('style', { 'data-dsh-workspace-status': 'styles' }, STYLES),
         settings.colors === true && canPaint ? h(TonePainter, props) : null,
       )
     }
@@ -333,17 +300,17 @@ window.__ModuleLoader__.load({
     function WorkspaceColorsSettingsRow({ t }) {
       const settings = useSettings()
       return h('div', {
-        className: 'dsh-workspace-colors-row',
-        'data-dsh-workspace-colors': 'settings-row',
+        className: 'dsh-workspace-status-row',
+        'data-dsh-workspace-status': 'settings-row',
       },
-      h('div', { className: 'dsh-workspace-colors-row-head' },
-        h('div', { className: 'dsh-workspace-colors-row-title' }, t('settings.title')),
-        h('div', { className: 'dsh-workspace-colors-row-desc' }, t('settings.description'))),
-      h('label', { className: 'dsh-workspace-colors-option' },
-        h('span', { className: 'dsh-workspace-colors-option-label' }, t('settings.toggle')),
+      h('div', { className: 'dsh-workspace-status-row-head' },
+        h('div', { className: 'dsh-workspace-status-row-title' }, t('settings.title')),
+        h('div', { className: 'dsh-workspace-status-row-desc' }, t('settings.description'))),
+      h('label', { className: 'dsh-workspace-status-option' },
+        h('span', { className: 'dsh-workspace-status-option-label' }, t('settings.toggle')),
         h('input', {
           type: 'checkbox',
-          className: 'dsh-workspace-colors-switch',
+          className: 'dsh-workspace-status-switch',
           checked: settings.colors === true,
           onChange: (event) => { updateSettings({ colors: event.target.checked }) },
         })))
@@ -352,18 +319,18 @@ window.__ModuleLoader__.load({
     return {
       inject: ['locale', 'slots'],
       apply(ctx) {
-        ctx.effect(() => ctx.locale.register(NS, { en, zh }), 'workspace-colors: dictionaries')
+        ctx.effect(() => ctx.locale.register(NS, { en, zh }), 'workspace-status: dictionaries')
 
         ctx.slots.inject('settings.general.item', () => ctx.slots.register({
           name: 'settings.general.item',
-          id: 'workspace-colors',
+          id: 'workspace-status',
           order: 51,
           locale: NS,
         }, WorkspaceColorsSettingsRow))
 
         ctx.slots.inject('shell.overlay', () => ctx.slots.register({
           name: 'shell.overlay',
-          id: 'workspace-colors.status',
+          id: 'workspace-status.tone',
           order: 41,
         }, WorkspaceColorsOverlay))
       },
