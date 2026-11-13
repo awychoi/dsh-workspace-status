@@ -136,3 +136,12 @@ assert.deepEqual(
 )
 
 console.log('tone model: 9 checks passed')
+
+
+for (const name of ['readSettings', 'getSettings', 'subscribeSettings', 'updateSettings', 'useSettings']) {
+  assert.match(source, new RegExp(`function ${name}\\(`), `${name} is declared`)
+}
+
+for (const id of ['workspace-status', 'workspace-status.tone']) {
+  assert.ok(source.includes(`'${id}'`), `${id} is registered`)
+}
