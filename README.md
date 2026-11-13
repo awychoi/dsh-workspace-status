@@ -1,49 +1,82 @@
-# dsh-workspace-status
+# <img src="icon.svg" width="36" height="36" alt="" align="absmiddle"> Workspace Status
 
-Colors each workspace folder glyph in the DeepSeek Harness sidebar by rolling
-up what its sessions are doing:
+**A DeepSeek Harness plugin that colors each workspace folder by what its
+sessions are doing.**
 
-| folder color | meaning |
-|---|---|
-| red | a session waits for you — approval, plan review, or a question |
-| pulsing amber | at least one session, or one of its direct subagents, is working |
-| green | a session finished while you were not looking; clears once every finished session in that workspace has been opened |
-| unchanged (gray / blue) | idle, or everything already read |
+Workspace Status rolls the state of every session in a workspace into one
+folder glyph in the sidebar: red while something waits on you, pulsing amber
+while work runs, green while a finished session's completion is still unread.
+It reads the same statuses the session rows already use, so there is no extra
+state to maintain.
 
-Precedence is red → amber → green. The ungrouped bucket behaves the same for
-sessions that belong to no workspace. Archived, blank, and subagent
-conversations do not speak for a workspace; subagent work reaches its parent
-through the running child count (the same direct children the header subagent
-dropdown lists). Busy pulses are suppressed under `prefers-reduced-motion`.
+![Illustrative dark-theme layout: the sidebar's colored workspace folders and the three states](docs/preview.svg)
+
+## What you get
+
+- **Red folder** — a session waits for your approval, plan review, or answer.
+- **Pulsing amber folder** — any session, or one of its direct subagents, is
+  running.
+- **Green folder** — a session finished while you were not looking; it clears
+  once every finished session in that workspace has been opened.
+- **Ungrouped sessions** — the bucket for sessions outside every workspace
+  follows the same rule.
+
+## How it decides
+
+Each workspace resolves to the busiest state among its visible sessions, with
+**red → amber → green** precedence. Amber covers both a running parent and its
+running direct subagents, so a session waiting on subagents stays busy until
+they finish. Green is the same unread-completion reminder the session rows
+show; opening a session acknowledges it, and the folder returns to its normal
+color when the last unread session in that workspace is opened.
+
+Archived, blank, and subagent conversations do not speak for a workspace.
+Subagent work reaches its parent through the running child count — the same
+direct children the header subagent dropdown lists. External tasks in the
+catalog never count as running. Busy pulses are suppressed under
+`prefers-reduced-motion`.
+
+## Technical notes
+
+- **Host coupling:** DSH does not yet expose a slot for decorating a workspace
+  header row, so the layer paints the shipped folder glyph through
+  `data-row-key="workspace:<id>"`. If that markup changes, the layer stops
+  painting and folders return to their normal colors; nothing else breaks.
+- **One source of truth:** the rollup reads the shipped Session status and
+  Workspace snapshots; `completionUnread` is the same green reminder the
+  session rows use, and main-view retention acknowledges it.
+- **Theme-native colors:** folder colors use the theme's own error, warning,
+  and success tokens, so light and dark themes both work. The existing glyph is
+  recolored in place — the open/closed folder shape and the hover chevron stay
+  intact.
+- **Preference:** one switch in **Settings → General → Workspace Status**,
+  stored in `localStorage` under `dsh.workspace-status.settings.v1` and migrated
+  from earlier keys.
+- **Limit:** an approval requested inside a subagent's own conversation shows
+  amber (the parent is busy) rather than red; only a workspace session's own
+  pending approval/question is red.
 
 ## Install
 
-Use **Plugins → Add plugin** with this directory, or:
+1. In DSH, open **Plugins → Add plugin**.
+2. Enter `https://github.com/awychoi/dsh-workspace-status`, or the absolute path
+   to a local checkout.
+3. Enable the bundle. The sidebar's workspace folders recolor as sessions run,
+   finish, or wait for you.
 
-```sh
-dsh plugin add /path/to/dsh-workspace-status
-```
+## Uninstall
 
-Requires the shipped `ui-workspace` and `ui-session` client plugins, which the
-standard Web composition mounts.
+Remove **Workspace Status** from DSH's plugin list and restart DSH. The folder
+glyph returns to its normal color, and the switch remains in `localStorage`
+only.
 
-## Turn it off
+## Assets
 
-Settings → General → **Workspace Status** has one switch. It defaults to on and
-is stored in this browser's localStorage
-(`dsh.workspace-status.settings.v1`). On first load it inherits the previous
-value from `dsh.workspace-colors.settings.v1` or the combined
-`dsh.workspace-open.settings.v1` key, if any.
+`icon.svg` is the plugin icon. `icon-white.svg` is the transparent solid-white
+mark for dark backgrounds. Exported as `./icon` and `./icon-white`.
 
-## Implementation note
+## License
 
-DSH does not yet expose a slot for decorating a workspace header row, so the
-layer keys off the shipped row attribute `data-row-key="workspace:<id>"`. If a
-future DSH release changes that markup, the layer stops painting and the folder
-simply returns to its normal colors — nothing else breaks. A supported
-`sidebar.workspaces.workspace.leading` seat would let this move to the normal
-slot API.
+MIT. Copyright © 2026 awychoi.
 
-The colors use the theme's own status tokens, so light and dark themes both
-work. The existing glyph is recolored in place — the open/closed folder shape
-and the hover chevron stay intact.
+Not affiliated with DeepSeek.

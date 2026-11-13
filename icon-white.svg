@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36" fill="none" role="img" aria-label="Workspace Status">
+  <path d="M7 12.6c0-1.35 1.1-2.45 2.45-2.45h4.1c.85 0 1.64.44 2.1 1.16l.8 1.26h10.55c1.35 0 2.45 1.1 2.45 2.45v10.5c0 1.35-1.1 2.45-2.45 2.45H9.45C8.1 28.42 7 27.32 7 25.97z" stroke="#FFFFFF" stroke-width="2.2" stroke-linejoin="round"/>
+  <circle cx="13.6" cy="19.9" r="1.55" fill="#FFFFFF"/>
+  <circle cx="18" cy="19.9" r="1.55" fill="#FFFFFF"/>
+  <circle cx="22.4" cy="19.9" r="1.55" fill="#FFFFFF"/>
+</svg>
